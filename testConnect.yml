@@ -1,7 +1,12 @@
 ---
-- name: Check connection to reposerver
-  hosts: reposerver
+- name: Check SSH connection to reposerver and print result
+  hosts: reposervers
   gather_facts: no
   tasks:
-    - name: Ping repoServer
+    - name: Ping reposerver
       ansible.builtin.ping:
+      register: ping_result
+
+    - name: Print ping result
+      ansible.builtin.debug:
+        var: ping_result
