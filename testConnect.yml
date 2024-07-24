@@ -1,6 +1,6 @@
 ---
-- name: Check connection to repoServer
-  hosts: repoServer
+- name: Check connection to reposerver
+  hosts: reposerver
   gather_facts: no
   tasks:
     - name: Ping repoServer
