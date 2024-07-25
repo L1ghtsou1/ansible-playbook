@@ -2,14 +2,8 @@
 - name: Download test.php file from URL to /tmp/test
   hosts: all
   tasks:
-    - name: Create directory /tmp/test if it doesn't exist
-      file:
-        path: /tmp/test
-        state: directory
-        mode: '0755'
-
     - name: Download test.php from http://172.168.200.160/test.php
       get_url:
         url: http://172.168.200.160/test.php
-        dest: /tmp/test/test.php
+        dest: /home/node01
       tags: download
