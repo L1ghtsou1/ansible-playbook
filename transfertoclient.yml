@@ -1,0 +1,9 @@
+---
+- name: Download test.php file from URL to /tmp/test
+  hosts: clientv1
+  tasks:
+    - name: Download test.php from http://172.168.200.160/test.php
+      get_url:
+        url: http://172.168.200.160/test.php
+        dest: /home/node01/test.php
+      tags: download
