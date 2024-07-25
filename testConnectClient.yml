@@ -1,0 +1,7 @@
+---
+- name: Check connection to repoServer
+  hosts: client
+  gather_facts: no
+  tasks:
+    - name: Ping repoServer
+      ansible.builtin.ping:
