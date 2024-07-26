@@ -3,5 +3,10 @@
   hosts: client
   gather_facts: no
   tasks:
-    - name: Ping repoServer
+    - name: Ping reposerver
       ansible.builtin.ping:
+      register: ping_result
+
+    - name: Print ping result
+      ansible.builtin.debug:
+        var: ping_result
