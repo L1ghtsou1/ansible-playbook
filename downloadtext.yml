@@ -1,6 +1,6 @@
 ---
 - name: Download file test.txt
-  hosts: localhost
+  hosts: client
   tasks:
     - name: Download the file
       get_url:
