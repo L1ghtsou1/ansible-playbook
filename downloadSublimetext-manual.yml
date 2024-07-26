@@ -1,0 +1,19 @@
+---
+- name: Install sublime text on Repo Server
+  hosts: reposerver
+  become: yes
+  tasks:
+    - name: Update apt package index
+      ansible.builtin.apt:
+        update_cache: yes
+      
+    - name: Create directory
+      file:
+        path: /var/www/html/ubuntu/sublime_text
+        state: directory
+        mode: '0755'
+
+    - name: Download sublime text
+      get_url:
+        url: https://www.sublimetext.com/download_thanks?target=x64-deb#direct-downloads
+        dest: /var/www/html/ubuntu/sublime_text
