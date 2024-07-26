@@ -1,0 +1,13 @@
+---
+- name: Ping to URL
+  hosts: localhost
+  tasks:
+    - name: Ping the URL
+      uri:
+        url: http://172.168.200.160/ubuntu
+        return_content: yes
+      register: result
+
+    - name: Display the result
+      debug:
+        var: result
