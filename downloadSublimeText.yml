@@ -1,0 +1,13 @@
+---
+- name: Download file and save to directory on client
+  hosts: client
+  tasks:
+    - name: Create directory 'Sublime Text 3 '
+      file:
+        path: /tmp/sublime-text_build-3211
+        state: directory
+
+    - name: Download file from URL
+      get_url:
+        url: http://foreman.sgoc.local/dev/sublime-text_build-3211_amd64.deb
+        dest: /tmp/sublime-text_build-3211
