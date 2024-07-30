@@ -1,0 +1,14 @@
+---
+- name: List installed packages
+  hosts: centos
+  become: yes
+  tasks:
+    - name: Run rpm to list installed packages on RHEL/CentOS
+      ansible.builtin.shell: rpm -qa
+      register: rpm_output
+      when: ansible_os_family == "RedHat"
+
+    - name: Print installed packages (RHEL/CentOS)
+      ansible.builtin.debug:
+        var: rpm_output.stdout_lines
+      when: ansible_os_family == "RedHat"
