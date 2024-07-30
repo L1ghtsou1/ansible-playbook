@@ -1,0 +1,12 @@
+---
+- name: Check SSH connection to reposerver and print result
+  hosts: centos
+  gather_facts: no
+  tasks:
+    - name: Ping client
+      ansible.builtin.ping:
+      register: ping_result
+
+    - name: Print ping result
+      ansible.builtin.debug:
+        var: ping_result
