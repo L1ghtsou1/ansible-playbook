@@ -1,13 +1,680 @@
+title: Falco Create or Modify System Process Systemd Service
+id: 
+status: test
+description: Adversaries may create or modify systemd services to repeatedly execute malicious payloads as part of persistence. Systemd is a system and service manager commonly used for managing background daemon processes (also known as services) and other system resources in falco.
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.T1543.002
+    - attack.Persistence
+    - attack.PrivilegeEscalation
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection_1:
+        event.type: 
+            - execve
+            - execveat
+        proc.exepath|startwith:
+            - '/usr/lib/systemd/system'
+            - '/etc/systemd/system'
+    selection_2:
+        proc.exepath|contains: '/.config/systemd/user'
+    condition: falco and (selection_1 or selection_2)
+falsepositives:
+    - Admin or User activity
+level: medium
 ---
-- name: Ping to URL
-  hosts: localhost
-  tasks:
-    - name: Ping the URL
-      uri:
-        url: http://172.168.200.160/ubuntu
-        return_content: yes
-      register: result
+title: Falco DeobfuscateDecode Files or Information
+id: 
+status: test
+description: Adversaries may use Obfuscated Files or Information to hide artifacts of an intrusion from analysis. They may require separate mechanisms to decode or deobfuscate that information depending on how they intend to use it in falco.
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.T1140
+    - attack.DefenseEvasion
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection_1:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            - 'decode'
+            - 'base64 -d'
+    condition: falco and selection
+falsepositives:
+    - Admin or User activity
+level: medium
+---
+title: Event Triggered Execution Unix Shell Configuration Modification
+id: 
+status: test
+description: Adversaries may establish persistence through executing malicious commands triggered by a user’s shell. User Unix Shells execute several configuration scripts at different points throughout the session based on events in falco.
+references:
+    - https://attackdefense.com/challengedetailsnoauth?cid=1551
+    - https://www.elastic.co/guide/en/security/7.17/prebuilt-rule-0-14-1-bash-shell-profile-modification.html
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.T1546.004
+    - attack.Privilege Escalation
+    - attack.Persistence
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection_1:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            - 'vi'
+            - 'vim'
+            - 'nano'
+    selection_2:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            - 'bashrc'
+            - 'bash_profile'
+            - '.profile'
+            - '/etc/profile'
+            - '/etc/shells'
+            - '/etc/bashrc'
+            - 'csh.cshrc'
+            - '/csh.login'
+            - 'bash_logout'
+    condition: falco and selection_1 and selection_2
+falsepositives:
+    - Admin or User activity
+level: medium
+---
+title: Indicator Removal Timestomp
+id: 81221aa8-7188-11ee-b962-0242ac120002
+status: test
+description: Adversaries may modify file time attributes to hide new or changes to existing files. Timestomping is a technique that modifies the timestamps of a file (the modify, access, create, and change times), often to mimic files that are in the same folder in falco.
+author: Hoang Hoang
+date: 2025/03/24
+tags:
+logsource:
+  product: falco
+detection:
+  selection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|like:
+          - '%touch%-t %'
+          - '%touch%-d %'
+          - '%touch%-r %'
+          - '%touch%-acmr %'
+  condition: falco and selection
+falsepositives:
+- Admin or User activity
+level: medium
+---
+title: Indicator Removal Clear Linux or Mac System Logs
+id: 
+status: test
+description: Adversaries may clear system logs to hide evidence of an intrusion. macOS and Linux both keep track of system or user-initiated actions via system logs in falco in falco.
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.T1070.002
+    - attack.Defense Evasion
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection_1:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|likes:
+            - '%rm %'
+            - '%shred %'
+            - '%rmdir %'
+            - '%unlink %'
+            - '%truncate -s 0 %'
+    selection_2:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            - '/var/log'
+            - '/var/spool/mail'
+            - '.log'
+    condition: falco and selection_1 and selection_2
+falsepositives:
+    - Admin or User activity
+level: medium
+---
+title: System Service Discovery 2
+id: 
+status: experimental
+description: Adversaries may try to gather information about registered local system services. Adversaries may obtain information about services using tools as well as OS utility commands such as sc query, tasklist /svc, systemctl --type=service, and net start in falco.
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.execution
+    - attack.t1059.004
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection:
+        proc.cmdline|likes:
+            - '%systemctl --type=service%'
+            - '%systemctl list-units --type=service%'
+            - '%service --status-all%'
+            - '%ls%/etc/init.d/%'
+    condition: falco and selection
+falsepositives:
+    - Legitimate administration activities
+level: medium
+---
+title: Password policy discovery
+id: 81221cc4-7188-11ee-b962-0242ac120002
+status: test
+description: Adversaries may attempt to access detailed information about the password policy used within an enterprise network or cloud environment. Password policies are a way to enforce complex passwords that are difficult to guess or crack through Brute Force. This information may help the adversary to create a list of common passwords and launch dictionary and/or brute force attacks which adheres to the policy (e.g. if the minimum password length should be 8, then not trying passwords such as 'pass123'; not checking for more than 3-4 passwords per account if the lockout is set to 6 as to not lock out accounts) in falco.
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.T1201
+    - attack.Discovery
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|likes:
+            - '%chage% --list%'
+            - '%chage% --l%'
+            - '%passwd% -S%'
+            - '%passwd% --status%'
+    condition: falco and selection
+falsepositives:
+    - Admin or User activity
+level: medium
+---
+title: Sudo and sudo caching
+id: 81221ddc-7188-11ee-b962-0242ac120002
+status: test
+description: Adversaries may attempt to dump the contents of /etc/passwd and /etc/shadow to enable offline password cracking. Most modern Linux operating systems use a combination of /etc/passwd and /etc/shadow to store user account information including password hashes in /etc/shadow in falco.
+author: purple1
+date: 2025/03/11
+tags:
+    -  attack.T1003.008
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection_1:
+        event.type: 
+            - execve
+            - execveat
+        proc.name|contain:
+            - '\cat'
+            - '\head'
+            - '\tail'
+            - '\more'
+    selection_2:  
+        proc.cmdline|contains:
+            - 'pass'
+            - 'shadow'
+            - 'sudoers'
+    condition: falco and selection_1 and selection_2
+falsepositives:
+- Admin or User activity
+level: medium
+---
+title: Network Service Scanning
+id: 
+status: test
+description: Adversaries may attempt to get a listing of services running on remote hosts, including those that may be vulnerable to remote software exploitation in falco.
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.T1423
+    - attack.Discovery
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection:
+        event.type: 
+            - execve
+            - execveat
+        proc.name|endwithscontain:
+            - '/telnet'
+            - '/netcat'
+            - '/nc'
+            - '/nmap'
+    condition: falco and selection
+falsepositives:
+- Admin or User activity
+level: medium
 
-    - name: Display the result
-      debug:
-        var: result
+---
+title: Falco Reverse Shell Detection
+id: 
+status: experimental
+description: Detects suspicious shell commands or program code that may be executed or used in command line to establish a reverse shell in falco.
+references:
+    - https://attack.mitre.org/techniques/T1059/004/
+    - https://alamot.github.io/reverse_shells/
+    - https://github.com/SigmaHQ/sigma/blob/master/rules/linux/lnx_shell_susp_rev_shells.yml
+    - https://github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1059.004/T1059.004.md
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.execution
+    - attack.t1059.004
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            # Reverse Shell
+            - "sh -i"
+            - "python -c import"
+            - "php -r"
+            # Bind Shell
+            - "nc -"
+            - "python -c"
+    condition: falco and selection
+falsepositives:
+    - Legitimate administration activities
+level: critical
+
+---
+title: Logging configuration change
+id: 
+status: test
+description: Adversaries may modify and/or disable syslog to avoid detection of monitoring system in falco.
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.t1562.004
+    - attack.defense_evasion
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection_1:
+        event.type: 
+            - execve
+            - execveat
+        proc.exepath|contain:
+            - '/etc/syslog.conf'
+            - '/etc/syslog.conf'
+            - '/etc/syslog-ng/syslog-ng.conf'
+            - '*/etc/rsyslog.d/*.conf*' 
+    condition: falco and selection
+falsepositives:
+    - Admin or User activity
+level: medium
+---
+title: Adversary-in-the-Middle: LLMNR/NBT-NS Poisoning and SMB Relay
+id: 
+status: test
+description: By responding to LLMNR/NBT-NS network traffic, adversaries may spoof an authoritative source for name resolution to force communication with an adversary controlled system. This activity may be used to collect or relay authentication materials in falco.
+author: purple1
+date: 2025/03/11
+tags:
+    -  attack.T1557.001
+    -  attack.credential_access, attack.collection
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection_1:
+        event.type: 
+            - execve
+            - execveat
+        proc.name|contain:
+            - 'responder'
+    condition: falco and selection
+falsepositives:
+- Admin or User activity
+level: medium
+
+---
+title: Data destruction
+id: 
+status: test
+description: Adversaries may destroy data and files on specific systems or in large numbers on a network to interrupt availability to systems, services, and network resources in falco.
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.t1485
+    - attack.impact
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection_1:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            - '* dd if=%count=%*'  
+    condition: falco and selection
+falsepositives:
+- Admin or User activity
+level: medium
+
+---
+title: CVE-2021-41773 via a path traversal vulnerability in Apache (via linux).
+id:
+status: stable
+description: This rule is detect commands with arguments of CVE-2021-41773 via a path traversal vulnerability in the event mod-cgi is enabled and CVE-2021-42013 via Remote Code Execution on Apache in falco.
+references:
+    - https://twitter.com/hackerfantastic/status/1445531829985968137?s=20
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.initial_access
+    - attack.persistence
+    - attack.privilege_escalation
+    - attack.T1083
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection_1:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain|all:
+            - 'curl --data'
+            - 'A=|id>>/tmp/x;uname\$IFS-a>>/tmp/x'
+            - 'cgi-bin/.%2e/.%2e/.%2e/.%2e/bin/sh'
+    condition: falco and selection
+fields:
+    - CommandLine
+falsepositives:
+    - unlikely
+level: medium
+
+---
+title: Suspicious ddexec Privilege Escalation by Usage For Execution In Memory (via cmdline)
+id: 
+description: Attackers can utilize shell scripting with ddexec to hijack process memory in order to execute other programs without touching disk in falco.
+references:
+  - https://github.com/arget13/DDexec
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.privilege_escalation
+    - attack.t1055.009
+    - attack.execution
+    - attack.t1059.004
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection_1:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            - 'base64'
+            - '.b64'  
+    selection2: ##shells that support this
+        proc.cmdline|contain:
+            - 'bash'
+            - 'zsh'
+            - 'ash'
+    selection3:
+        proc.cmdline|contain|all:
+          - '/bin/'
+          - 'ddexec'
+    condition: falco and selection1 and selection2 and selection3
+falsepositives:
+    - unknown
+level: high
+
+---
+title: Mirai Botnet using Log4j with New ELF Binary (via process_creation)
+id:
+status: stable
+description: Mirai botnet exploits log4j to spread. It does this with the new elf binary. With this rule, you can detect the process of new elf binary file in falco.
+reference:
+    - https://twitter.com/SI_FalconTeam/status/1489530113293266945?s=20&t=Af3NoGZhbFn7pkA6WSiKow
+    - https://www.virustotal.com/gui/file/5ff22b524db21ebfa3c80a5a35db76bf36b6a25c2cb8cad01e039b7afaf91cf8/detection
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.T1105
+    - attack.Command_and_Control
+    - attack.T1222
+    - attack.T1222.002
+    - attack.Defense_Evasion
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain|all:
+            - 'curl'
+            - 'spoofhosting'
+            - 'chmod 777'
+            - 'npms'
+    condition: falco and selection
+fields:
+    - Image
+    - CommandLine
+falsepositives:
+    - unlikely
+level: high
+
+---
+title: Vulnerability Scanner Tool Detection on Linux (via process_creation)
+id:
+status: stable
+description: Attacker can use your system with some penetration tools as kali tools etc in falco.
+references:
+    - https://geekflare.com/brute-force-attack-tools/
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.T1595.001
+    - attack.reconnaissance
+level: medium
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection_1:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            - gobuster
+            - bruteX
+            - dirsearch
+            - callow
+            - hydra
+            - patator
+            - pydictor
+            - ncrack
+            - hashcat
+            - nmap
+            - dirbuster
+            - nessus
+            - netsparker
+            - sqlmap
+            - nikto
+            - dirb
+            - wfuzz
+            - msfconsole
+            - zenmap
+    condition: falco and selection
+fields:
+    - CommandLine
+falsepositives:
+    - Red team activity
+
+---
+title: SysJoker Linux Backdoor Detection Patterns (via file_event)
+id:
+status: stable
+description: This rule detects behaviour patterns of SysJoker backdoor in falco.
+references:
+    - https://www.intezer.com/blog/malware-analysis/new-backdoor-sysjoker/
+    - https://malware.news/t/new-sysjoker-backdoor-targets-windows-linux-and-macos/56207
+    - https://www.bleepingcomputer.com/news/security/new-sysjoker-backdoor-targets-windows-macos-and-linux/
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.t1059
+    - attack.t1543.001
+    - attack.execution
+    - attack.persistence
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection_1:
+        event.type: 
+            - execve
+            - execveat
+        proc.name|contain|all:
+            - 'Library' #/.Library/SystemServices/updateSystem
+            - 'SystemServices'
+            - 'updateSystem'
+    condition: falco and selection
+falsepositives:
+    - Unknown
+level: high
+
+---
+title: Data Exfiltration
+id: 
+status: experimental
+description: This rule detect data exfiltration attack in falco.
+references:
+    - https://blog.apnic.net/2022/03/31/how-to-detect-and-prevent-common-data-exfiltration-attacks/
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.exfiltration
+    - attack.t1020.001
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection_1:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain: 
+            - '*curl*POST*'
+            - '*dig*+noidnin*+noidnout*'
+            - '*nping*--icmp*'
+            - '*sender.py*'
+            - '*exfiltrate.py*'
+    condition: falco and selection
+fields:
+    - Type
+    - CommandLine
+falsepositives:
+    - Unknown
+level: medium
+---
+title: Falco changed Login Configuration Files (via auditd)
+id: 
+status: stable
+description: Detects when changes are made to login configuration files are made. The files monitored in this rule are used to configure logging and policies around user logins on linux systems in falco.
+references:
+    - https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/security_guide/app-audit_reference#sec-Audit_Events_Fields
+    - https://man7.org/linux/man-pages/man5/login.defs.5.html
+    - https://linux.die.net/man/8/pam_securetty
+    - https://man7.org/linux/man-pages/man8/faillog.8.html
+    - https://man7.org/linux/man-pages/man8/pam_tally2.8.html
+    - https://man7.org/linux/man-pages/man8/lastlog.8.html
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.defense_evasion
+    - attack.t1562
+    - attack.t1562.001
+    - attack.t1562.006
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection:
+        event.type: 
+            - execve
+            - execveat
+        proc.name|contain:
+            - 'login.defs'
+            - 'securetty'
+            - 'faillog'
+            - 'lastlog'
+            - 'tallylog'
+    condition: falco and selection
+falsepositives:
+  - Legitimate Admainistrative Activity
+level: medium
+---
