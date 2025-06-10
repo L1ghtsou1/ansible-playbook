@@ -40,6 +40,782 @@ UC183_sysJoker_linuxbackdoor_detection_patterns
 UC184_data_exfiltration
 UC189_changed_loginconfiguration_files(via_auditd)
 ---
+--- Tên file: UC092_falco_data_compress.yml ---
+title: Falco Data Compress
+id: 
+status: stable
+description: An adversary may compress data (e.g., sensitive documents) that is collected prior to exfiltration in order to make it portable and minimize the amount of data sent over the network.
+references:
+    - https://attack.mitre.org/techniques/T1560
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.collection
+    - attack.t1560
+logsource:
+    product: linux
+    service: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+          - 'tar'
+          - 'gzip'
+          - 'zip'
+          - 'unzip'
+    condition: falco and selection
+falsepositives:
+    - Legitimate administration activities
+level: low
+
+
+--- Tên file: UC094_falco_network_configure_modification.yml ---
+title: Falco Network Configuration Modification
+id: 
+status: stable
+description: Adversaries could choose to do this if they have sufficient access or proximity, and the connection might not be secured or defended as well as the primary Internet-connected channel because it is not routed through the same enterprise network.
+references:
+    - https://attack.mitre.org/techniques/T1016
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.exfiltration
+    - attack.t1011
+logsource:
+    product: linux
+    service: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection:
+        event.type: 
+            - execve
+            - execveat
+        proc.exepath|contain:
+            - '/etc/hosts'
+            - '/etc/hosts.allow'
+            - '/etc/hosts.deny'
+            - '/etc/sysconfig/network'
+            - '/etc/network/*'
+            - '/etc/NetworkManager/*'
+    condition: falco and selection
+falsepositives:
+    - Legitimate administration activities
+level: low
+
+
+--- Tên file: UC095_falco_netwotk_configuration_discovery.yml ---
+title: Falco Network Configuration Discovery
+id:
+status: stable
+description: Adversaries may use the information from System Network Configuration Discovery during automated discovery to shape follow-on behaviors, including whether or not the adversary fully infects the target and/or attempts specific actions.
+references:
+    - https://attack.mitre.org/techniques/T1016
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.discovery
+    - attack.t1016
+logsource:
+    product: linux
+    service: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            - 'route'
+            - 'ip'
+            - 'ipconfig'
+            - 'nmcli'
+            - 'arp'
+            - 'nslookup'
+            - 'sysctl'
+    condition: falco and selection
+falsepositives:
+    - Legitimate administration activities
+level: low
+
+
+--- Tên file: UC096_falco_network_sniffing.yml ---
+title: Falco Network Sniffing
+id:
+status: stable
+description: Network sniffing refers to using the network interface on a system to monitor or capture information sent over a wired or wireless connection. An adversary may place a network interface into promiscuous mode to passively access data in transit over the network, or use span ports to capture a larger amount of data.
+references:
+    - https://attack.mitre.org/techniques/T1040
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.collection
+    - attack.t1560
+logsource:
+    product: linux
+    service: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            - 'tcpdump'
+            - 'tshark'
+            - 'rawshark'
+            - 'wireshark'
+            - 'wireshark-cli'
+            - 'wireshark-qt'
+            - 'bettercap'
+            - 'dsniff'
+            - 'eigrp-tools'
+            - 'ettercap'
+            - 'httpsniff'
+            - 'netsniff-ng'
+            - 'sslsniff'
+            - 'ssldump'
+            - 'tcpick'
+            - 'wifi-monitor'
+    condition: falco and selection
+falsepositives:
+    - Legitimate administration activities
+level: low
+
+
+--- Tên file: UC097_falco_network_connection_discovery.yml ---
+title: Falco Network Connection Discovery
+id: 
+status: stable
+description: Adversaries may attempt to get a listing of network connections to or from the compromised system they are currently accessing or from remote systems by querying for information over the network.
+references:
+    - https://attack.mitre.org/techniques/T1049
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.discovery
+    - attack.t1049
+logsource:
+    product: linux
+    service: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            - 'ping'
+            - 'ping6'
+            - 'lsof'
+            - 'ss'
+            - 'netstat'
+    condition: falco and selection
+falsepositives:
+    - Legitimate administration activities
+level: low
+
+
+--- Tên file: UC099_falco_process_discovery.yml ---
+title: Falco Process Discovery
+id: 
+status: stable
+description: Adversaries may attempt to get information about running processes on a system. Information obtained could be used to gain an understanding of common software running on systems within the network.
+references:
+    - https://attack.mitre.org/techniques/T1057
+author: purple1
+date: 2025/03/11
+logsource:
+    product: linux
+    service: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            - 'ps'
+            - 'pidof'
+            - 'top'
+            - 'htop'
+            - 'atop'
+            - 'pgrep'
+            - 'iotop'
+    condition: falco and selection
+falsepositives:
+    - Legitimate administration activities
+level: low
+
+
+--- Tên file: UC100_falco_account_discovery.yml ---
+title: Falco Account Discovery
+id: 
+status: stable
+description: Adversaries may attempt to get a listing of local system or domain accounts.
+references:
+    - https://attack.mitre.org/techniques/T1087
+    - https://github.com/SigmaHQ/sigma/blob/master/rules/linux/lnx_local_account.yml
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.discovery
+    - attack.t1087
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            - 'who'
+            - 'whoami'
+            - 'users'
+            - 'groups'
+            - 'id'
+            - 'lastlog'
+    condition: falco and selection
+falsepositives:
+    - Legitimate administration activities
+level: low
+
+
+--- Tên file: UC101_falco_file_permission_modification.yml ---
+title: Falco File Permission Modification
+id: 
+status: stable
+description: Adversaries may modify file or directory permission/ attributes to evade intended DACLs. Modifications may include changing specific
+references:
+    - https://attack.mitre.org/techniques/T1222
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.defense_evasion
+    - attack.t1222.002
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection_1:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            - 'chmod'
+            - 'chown'
+            - 'fchmodat'
+            - 'fchown'
+            - 'fchownat'
+            - 'fsetxattr'
+            - 'fremovexattr'
+            - 'fsetxattr'
+            - 'lchown'
+            - 'lremovexattr'
+            - 'lsetxattr'
+            - 'removeattr'
+            - 'setxattr'      
+    selection_2:
+        event.type : 
+            - execve
+            - execveat
+        proc.cmdline contain all:
+            - 'chattr'
+            - 'i'
+    condition: falco and (1 of them)
+falsepositives:
+    - Legitimate administration activities
+level: low
+
+
+--- Tên file: UC102_falco_logging_configuration_changes_on_linux_host.yml ---
+title: Logging configuration Change on Linux Host
+id: 
+status: stable
+description: Adversaries may modify and/or disable syslog to avoid detection of monitoring system.
+references:
+    - https://attack.mitre.org/techniques/T1222
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.defense_evasion
+    - attack.t1222.002
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection_1:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            - 'chmod'
+            - 'chown'
+            - 'fchmodat'
+            - 'fchown'
+            - 'fchownat'
+            - 'fsetxattr'
+            - 'fremovexattr'
+            - 'fsetxattr'
+            - 'lchown'
+            - 'lremovexattr'
+            - 'lsetxattr'
+            - 'removeattr'
+            - 'setxattr'      
+    selection_2:
+        event.type : 
+            - execve
+            - execveat
+        proc.cmdline contain all:
+            - 'chattr'
+            - 'i'
+    condition: falco and (1 of them)
+falsepositives:
+    - Legitimate administration activities
+level: low
+
+
+--- Tên file: UC103_falco_lataral_transfer.yml ---
+title: Falco Lateral Tools Transfer 
+id: 
+status: stable
+description: Adversaries may transfer tools or other files between systems in a compromised environment. Files may be copied from one system to another to stage adversary tools or other files over the course of an operation.
+references:
+    - https://attack.mitre.org/techniques/T1570
+    - https://github.com/SigmaHQ/sigma/blob/master/rules/linux/lnx_file_copy.yml
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.lateral_movement
+    - attack.t1570
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            - 'scp' #path='/usr/bin/scp'
+            - 'rsync' #path='/usr/bin/rsync'
+            - 'sftp' #path='/usr/bin/sftp'
+    condition: falco and selection
+falsepositives:
+    - Legitimate administration activities
+level: low
+
+
+--- Tên file: UC104_falco_system_info_discovery.yml ---
+title: Falco System Info Discovery 
+id: 
+status: stable
+description: Adversaries may try to gather system information to evaluate and find weak points.
+author: purple1
+date: 2025/03/11
+references:
+    - https://attack.mitre.org/techniques/T1082/
+    - https://github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1082/T1082.md
+    - https://github.com/SigmaHQ/sigma/blob/master/rules/linux/lnx_system_info_discovery.yml
+tags:
+    - attack.discovery
+    - attack.t1082
+logsource:
+    product: falco
+detection:
+    # List OS Information
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection_1:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            - 'uname'  # /usr/bin/uname
+            - 'uptime' # /usr/bin/uptime
+            - 'hostname' # /usr/bin/hostname
+            - 'env'  # /usr/bin/env
+    # Check Hardware / Kernel Modules for Linux VM
+    selection_2:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            - 'dmidecode'
+            - 'lspci'
+            - 'lscpu'
+            - 'lsmod'
+    condition: falco and (1 of them)
+falsepositives:
+    - Legitimate administration activities
+level: low
+
+
+--- Tên file: UC105_falco_base64_data_decode.yml ---
+title: Falco Base64 Data Decode 
+id: 
+status: experimental
+description: Detects usage of base64 utility to decode arbitrary base64-encoded text
+references:
+    - https://attack.mitre.org/techniques/T1027/
+    - https://github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1027/T1027.md
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.defense_evasion
+    - attack.t1027
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+# Extract hardcoded password
+    selection:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            - 'base64'   # /usr/bin/base64
+    condition: falco and selection
+falsepositives:
+    - Legitimate administration activities
+level: low
+
+
+--- Tên file: UC107_falco_file_and_directory_discovery.yml ---
+title: Falco File And Directory Discovery
+id: 
+status: experimental
+description: Detects usage of system utilities to discover files and directories.
+references:
+    - https://attack.mitre.org/techniques/T1083/
+    - https://github.com/SigmaHQ/sigma/blob/master/rules/linux/lnx_file_and_directory_discovery.yml
+    - https://github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1083/T1083.md
+author: purple1
+date: 2025/03/11
+tags:   
+    - attack.discovery
+    - attack.t1083
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            - 'ls'     # /usr/bin/ls
+            - 'file'   # /usr/bin/file
+            - 'cat'    # /usr/bin/cat
+            - 'find'   # /usr/bin/find
+            - 'locate' # /usr/bin/locate  # Install
+            - 'which'  # /usr/bin/which
+            - 'tree'   # /usr/bin/tree    # Install
+    condition: falco and selection
+falsepositives:
+  - Legitimate administration activities
+level: low
+
+
+--- Tên file: UC108_falco_credential_discovery.yml ---
+title: Falco Credentials Discovery 
+id:
+status: experimental
+description: Detecting attempts to extract credentials in Falco system.
+references:
+    - https://attack.mitre.org/techniques/T1552/001/
+    - https://github.com/SigmaHQ/sigma/blob/master/rules/linux/lnx_find_cred_in_files.yml
+    - https://github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1552.001/T1552.001.md
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.credential_access
+    - attack.t1552.001
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection_1:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            - 'grep'   # /usr/bin/grep
+    selection_2:
+        event.type : 
+            - execve
+            - execveat
+        proc.cmdline contain:
+            - 'password'
+            - 'pwd'
+            - 'pass'
+    condition: falco and selection_1 and selection_2 
+level: high
+
+--- Tên file: UC143_falco_system_shutdow_or_reboot.yml ---
+title: System shutdown or reboot
+id: 
+status: test
+description: Adversaries may shutdown/reboot systems to interrupt access to, or aid in the destruction of, those systems. Operating systems may contain commands to initiate a shutdown/reboot of a machine or network device.
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.impact
+    - attack.t1529
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id : host
+        rule : "A new proccess has been created"
+    selection_1:
+        event.type : 
+            - execve
+            - execveat
+        proc.cmdline contain:
+            - '%_init 0%'
+            - '%_halt %'
+            - '%_reboot %'
+            - '%_poweroff%'
+            - '%_init 6%'
+            - '%_shutdown%'
+        selection_2:
+          event.type contain:
+            - 'boot'
+            - 'shutdown'
+  condition: falco and (selection_1 or selection_2)
+falsepositives:
+    - Admin or User activity
+level: medium
+
+--- Tên file: UC144_falco_file_and_directory_permission_modification.yml ---
+title: Falco File And Directory Permission Modification
+id: 
+status: test
+description: Adversaries may modify file or directory permissions/attributes to evade access control lists (ACLs) and access protected files.
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.t1222.002
+    - attack.defense_evasion
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection_1:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            - '%chmod %'
+            - '%chown %'
+    condition: falco and selection
+falsepositives:
+    - Admin changing file permissions.
+level: medium
+
+--- Tên file: UC146_falco_suspicious_trap_command_execution.yml ---
+title: Falco Suspicious Trap Command Execution (via cmdline)
+id: 
+status: stable
+description: The trap command allows programs and shells to specify commands that will be executed upon receiving interrupt signals. A common situation is a script allowing for graceful termination and handling of common keyboard interrupts like ctrl+c and ctrl+d. Adversaries can use this to register code to be executed when the shell encounters specific interrupts either to gain execution or as a persistence mechanism.
+references:
+    - https://github.com/Kirtar22/Litmus_Test/blob/master/Persistence/T1154/T1154.md
+    - https://attack.mitre.org/techniques/T1546/005/
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.t1546.005
+    - attack.persistance
+    - attack.privelege_escalation
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection_1:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain|all:
+            - 'trap'
+            - 'bash'
+            - '|'
+    condition: falco and selection
+falsepositives:
+    - Unlikely
+level: medium
+
+
+--- Tên file: UC147_falco_sudo_and_sudo_caching.yml ---
+title: Sudo and sudo caching
+id: 
+status: test
+description: Adversaries may perform sudo caching and/or use the sudoers file to elevate privileges. Adversaries may do this to execute commands as other users or spawn processes with higher privileges.
+references:
+    - 'MITRE Attack sub-technique T1548.003'
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.T1548.003
+    - attack.PrivilegeEscalation
+    - attack.DefenseEvasion
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection_1:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            - sudo -l
+            - sudo cat /etc/sudoers
+            - sudo vim /etc/sudoers
+            - sudo sed -i 's/env_reset.*$/env_reset,timestamp_timeout=-1/' /etc/sudoers
+            - sudo visudo -c -f /etc/sudoers
+            - sudo sh -c "echo Defaults "'!'"tty_tickets >> /etc/sudoers"
+            - sudo visudo -c -f /etc/sudoers
+    condition: falco and selection
+falsepositives:
+- Admin or User activity
+level: medium
+
+--- Tên file: UC155_falco_obfuscated_files_or_information_steganography.yml ---
+title: Falco Obfuscated Files or Information Steganography
+id: 
+status: test
+description: Adversaries may use steganography techniques in order to prevent the detection of hidden information. Steganographic techniques can be used to hide data in digital media such as images, audio tracks, video clips, or text files.
+author: purple1
+date: 2025/03/11
+reference:
+    - https://github.com/SigmaHQ/sigma/blob/master/rules/linux/auditd/lnx_auditd_unzip_hidden_zip_files_steganography.yml
+tags:
+    - attack.T1027.003
+    - attack.Defensevasion
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection_1:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            - '%cat%.jpg%.zip%'
+            - '%cat%.png%.zip%'
+    condition: falco and selection
+falsepositives:
+    - Admin or User activity
+level: medium
+
+
+--- Tên file: UC156_falco_detect_edit_of_.bash_profile_and_.bashrc.yml ---
+title: Falco Detect edit of .bash_profile and .bashrc
+id: 
+status: test
+description: Detects change of user environment. Adversaries can insert code into these files to gain persistence each time a user logs in or opens a new shell.
+references:
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.s0003
+    - attack.persistence
+    - attack.t1546.004
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection_1:
+        event.type: 
+            - execve
+            - execveat
+        proc.exepath|contain:
+            - /root/.bashrc
+            - /root/.bash_profile
+            - /root/.profile
+            - /home/*/.bashrc
+            - /home/*/.bash_profile
+            - /home/*/.profile
+            - /etc/profile
+            - /etc/shells
+            - /etc/bashrc
+            - /etc/csh.cshrc
+            - /etc/csh.login
+    condition: falco and selection
+falsepositives:
+    - Admin or User activity
+level: medium
+
+--- Tên file: UC157_falco_unsecured_credentials_private_keys.yml ---
+title: Unsecured Credentials Private Keys
+id: 
+status: test
+description: Adversaries may disable or modify system firewalls in order to bypass controls limiting network usage.
+author: purple1
+date: 2025/03/11
+tags:
+    - attack.T1552.004
+    - attack.CredentialAccess
+logsource:
+    product: falco
+detection:
+    falco:
+        container.id: host
+        rule: "A new proccess has been created"
+    selection_1:
+        event.type: 
+            - execve
+            - execveat
+        proc.cmdline|contain:
+            - 'rootkey'
+            - 'userkey'
+            - 'privatekey'
+    condition: falco and selection
+falsepositives:
+    - Admin or User activity
+level: medium
+
+--- Tên file: UC158_falco_crate_or_modify_system_processs_systemd_service.yml ---
 title: Falco Create or Modify System Process Systemd Service
 id: 
 status: test
@@ -69,7 +845,8 @@ detection:
 falsepositives:
     - Admin or User activity
 level: medium
----
+
+--- Tên file: UC160_falco_deobfuscate_decode_files_or_information.yml ---
 title: Falco DeobfuscateDecode Files or Information
 id: 
 status: test
@@ -96,7 +873,8 @@ detection:
 falsepositives:
     - Admin or User activity
 level: medium
----
+
+--- Tên file: UC163_falco_event_triggered_execution_unix_shell_configuration_modification.yml ---
 title: Event Triggered Execution Unix Shell Configuration Modification
 id: 
 status: test
@@ -142,7 +920,8 @@ detection:
 falsepositives:
     - Admin or User activity
 level: medium
----
+
+--- Tên file: UC165_falco_file_time_attribute_change.yml ---
 title: Indicator Removal Timestomp
 id: 81221aa8-7188-11ee-b962-0242ac120002
 status: test
@@ -170,7 +949,8 @@ detection:
 falsepositives:
 - Admin or User activity
 level: medium
----
+
+--- Tên file: UC168_falco_indicator_removal_clear_linux_or_mac_system_logs.yml ---
 title: Indicator Removal Clear Linux or Mac System Logs
 id: 
 status: test
@@ -208,7 +988,8 @@ detection:
 falsepositives:
     - Admin or User activity
 level: medium
----
+
+--- Tên file: UC170_falco_system_srvice_discovery2.yml ---
 title: System Service Discovery 2
 id: 
 status: experimental
@@ -234,7 +1015,8 @@ detection:
 falsepositives:
     - Legitimate administration activities
 level: medium
----
+
+--- Tên file: UC171_falco_password_policy_discovery.yml ---
 title: Password policy discovery
 id: 81221cc4-7188-11ee-b962-0242ac120002
 status: test
@@ -263,7 +1045,8 @@ detection:
 falsepositives:
     - Admin or User activity
 level: medium
----
+
+--- Tên file: UC172_falco_credential_etcpasswd_and_etcshadow-Copy.yml ---
 title: Sudo and sudo caching
 id: 81221ddc-7188-11ee-b962-0242ac120002
 status: test
@@ -296,7 +1079,8 @@ detection:
 falsepositives:
 - Admin or User activity
 level: medium
----
+
+--- Tên file: UC173_falco_network_service_scanning.yml ---
 title: Network Service Scanning
 id: 
 status: test
@@ -326,7 +1110,8 @@ falsepositives:
 - Admin or User activity
 level: medium
 
----
+
+--- Tên file: UC174_falco_reverse_shell_detection.yml ---
 title: Falco Reverse Shell Detection
 id: 
 status: experimental
@@ -364,7 +1149,8 @@ falsepositives:
     - Legitimate administration activities
 level: critical
 
----
+
+--- Tên file: UC176_falco_logging_configuration_change.yml ---
 title: Logging configuration change
 id: 
 status: test
@@ -393,7 +1179,8 @@ detection:
 falsepositives:
     - Admin or User activity
 level: medium
----
+
+--- Tên file: UC177_falco_LLMNR_or_NBT-NS_poisoing_and_SMB_relay.yml ---
 title: Adversary-in-the-Middle: LLMNR/NBT-NS Poisoning and SMB Relay
 id: 
 status: test
@@ -420,7 +1207,8 @@ falsepositives:
 - Admin or User activity
 level: medium
 
----
+
+--- Tên file: UC178_falco_data_destruction.yml ---
 title: Data destruction
 id: 
 status: test
@@ -447,7 +1235,8 @@ falsepositives:
 - Admin or User activity
 level: medium
 
----
+
+--- Tên file: UC179_falco_CVE-2021-41773_via_a_path_traversal_vulnerability_in_Apache.yml ---
 title: CVE-2021-41773 via a path traversal vulnerability in Apache (via linux).
 id:
 status: stable
@@ -482,7 +1271,8 @@ falsepositives:
     - unlikely
 level: medium
 
----
+
+--- Tên file: UC180_falco_ddexec_prvilege_escalation_by_usage_for_execution_in_memonry.yml ---
 title: Suspicious ddexec Privilege Escalation by Usage For Execution In Memory (via cmdline)
 id: 
 description: Attackers can utilize shell scripting with ddexec to hijack process memory in order to execute other programs without touching disk in falco.
@@ -522,7 +1312,8 @@ falsepositives:
     - unknown
 level: high
 
----
+
+--- Tên file: UC181_falco_botnet_using_log4j_iwth_new_ELK_binary.yml ---
 title: Mirai Botnet using Log4j with New ELF Binary (via process_creation)
 id:
 status: stable
@@ -561,7 +1352,8 @@ falsepositives:
     - unlikely
 level: high
 
----
+
+--- Tên file: UC182_falco_vulnerability_scanner_tool_detection_on_linux.yml ---
 title: Vulnerability Scanner Tool Detection on Linux (via process_creation)
 id:
 status: stable
@@ -610,7 +1402,8 @@ fields:
 falsepositives:
     - Red team activity
 
----
+
+--- Tên file: UC183_falco_sysjoker_linux_backdoor_detection_patterns.yml ---
 title: SysJoker Linux Backdoor Detection Patterns (via file_event)
 id:
 status: stable
@@ -645,7 +1438,8 @@ falsepositives:
     - Unknown
 level: high
 
----
+
+--- Tên file: UC184_falco_data_exfiltration.yml ---
 title: Data Exfiltration
 id: 
 status: experimental
@@ -680,7 +1474,8 @@ fields:
 falsepositives:
     - Unknown
 level: medium
----
+
+--- Tên file: UC189_falco_changed_login_configuration_files.yml ---
 title: Falco changed Login Configuration Files (via auditd)
 id: 
 status: stable
@@ -719,4 +1514,3 @@ detection:
 falsepositives:
   - Legitimate Admainistrative Activity
 level: medium
----
